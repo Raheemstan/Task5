@@ -103,6 +103,14 @@ class ExamsController extends Controller
         }
     }
 
+    public function logout()
+    {
+        Session::forget('student_email');
+        Session::forget('student_id');
+        Session::forget('exam_id');
+        return redirect()->route('exams.login');
+    }
+
     public function showLogin()
     {
         return view('exams.login');
@@ -216,18 +224,16 @@ class ExamsController extends Controller
 
         $email = Session::get('student_email');
         $student = Student::where('email', $email)->first();
-        $examResult = ExamResults::where('exams_id', $exam->id)
-            ->where('student_id', $student->id)
+        $studentId = $student->id;
+        $result = ExamResults::where('student_id', $studentId)
+            ->where('exams_id', $exam->id)
             ->firstOrFail();
 
-        $questions = $exam->questions()->with(['studentAnswers' => function ($query) use ($student) {
-            $query->where('student_id', $student->id);
-        }])->get();
-        if ($examResult->isPassed()) {
-            return view('exams.result', compact('student', 'exam', 'examResult', 'questions'));
+        $questions = $exam->questions()->get();
+        if (!$result) {
+            return redirect()->route('exams.login')->with('error', 'No result found.');
         }
 
-
-        return view('exams.result', compact('exam', 'result', 'student'));
+        return view('exams.result', compact('exam', 'result', 'student', 'questions', 'exam'));
     }
 }

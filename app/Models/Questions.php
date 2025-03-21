@@ -22,4 +22,6 @@ class Questions extends Model
     {
         return $this->belongsTo(Exams::class);
     }
+
+    
 }

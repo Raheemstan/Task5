@@ -20,6 +20,7 @@ Route::post('/exam/authenticate', [ExamsController::class, 'authenticate'])->nam
 Route::get('/exam/{exam}/start', [ExamsController::class, 'startExam'])->name('exams.start');
 Route::post('/exam/{exam}/submit', [ExamsController::class, 'submitExam'])->name('exams.submit');
 Route::get('/exam/{exam}/result', [ExamsController::class, 'showResult'])->name('exams.result');
+Route::post('/exam/logout', [ExamsController::class, 'logout'])->name('exams.logout');
 
 // Authenticated Routes
 Route::middleware(['auth', 'verified'])->group(function () {

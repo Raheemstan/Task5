@@ -11,34 +11,30 @@
 
                     <p><strong>Student Name:</strong> {{ $student->name }}</p>
                     <p><strong>Exam:</strong> {{ $exam->name }}</p>
-                    <p><strong>Total Score:</strong> {{ $examResult->total_score }} / {{ $examResult->passing_score }}</p>
-                    <p><strong>Grade:</strong> <span class="badge bg-primary">{{ $examResult->grade }}</span></p>
-                    
-                    @if ($examResult->status === 'passed')
-                        <p class="text-success"><strong>Status: Passed 🎉</strong></p>
+                    <p><strong>Total Score:</strong> {{ $result->total_score }} / {{ $result->passing_score }}</p>
+                    <p><strong>Grade:</strong> <span class="badge bg-primary">{{ $result->grade }}</span></p>
+
+                    @if ($result->status === 'passed')
+                        <p class="text-success"><strong>Status: Passed</strong></p>
                     @else
-                        <p class="text-danger"><strong>Status: Failed ❌</strong></p>
+                        <p class="text-danger"><strong>Status: Failed</strong></p>
                     @endif
 
                     <hr>
-
                     <h6 class="mb-3">Question Breakdown:</h6>
                     <ul class="list-group">
                         @foreach ($questions as $question)
                             <li class="list-group-item">
                                 <p><strong>Q:</strong> {{ $question->question }}</p>
-                                <p>
-                                    <strong>Your Answer:</strong> 
-                                    <span class="{{ $question->is_correct ? 'text-success' : 'text-danger' }}">
-                                        {{ $question->student_answer }}
-                                    </span>
-                                </p>
                                 <p><strong>Correct Answer:</strong> {{ $question->answer }}</p>
                             </li>
                         @endforeach
                     </ul>
 
-                    <a href="{{ route('dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+                    <form action="{{ route('exams.logout', $exam->id) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-primary mt-4">Back to Exams</button>
+                    </form>
                 </div>
             </div>
         </div>

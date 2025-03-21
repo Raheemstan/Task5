@@ -28,10 +28,6 @@
                 </div>
             </div>
 
-            <a href="{{ route('dashboard') }}" class="nav-item nav-link">
-                <i class="fa fa-chart-bar me-2"></i> Results
-            </a>
-
             <a href="{{ route('settings.index') }}" class="nav-item nav-link">
                 <i class="fa fa-cog me-2"></i> Settings
             </a>

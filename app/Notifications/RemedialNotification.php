@@ -21,7 +21,7 @@ class RemedialNotification extends Notification implements ShouldQueue
     {
         return ['mail'];
     }
-
+    
     public function toMail($notifiable)
     {
         Log::info('Sending remedial notification for ' . $notifiable->email);
