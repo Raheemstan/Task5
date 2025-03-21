@@ -1,66 +1,141 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Exam Management System Documentation
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Features
 
-## About Laravel
+✅ **Teacher Features**
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Create, edit, and delete exams
+- Manage questions with multiple-choice options
+- Set correct answers and assign scores
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+✅ **Student Features**
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Login using **email and exam ID**
+- Take exams with real-time validation
+- Submit answers and receive instant results
 
-## Learning Laravel
+✅ **Exam Processing**
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- Auto-grading based on correct answers
+- Store student responses securely
+- Pass/Fail calculation based on settings
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+✅ **Admin Features**
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Configure exam settings (passing score, time limits, etc.)
+- Enable/Disable exams dynamically
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Installation
 
-### Premium Partners
+### 1. Clone Repository
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```sh
+    git clone https://github.com/Raheemstan/Task5.git
+    cd Task5
+```
 
-## Contributing
+### 2. Install Dependencies
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```sh
+    composer install
+    npm install
+    npm run dev
+```
 
-## Code of Conduct
+### 3. Configure Environment
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Copy `.env.example` to `.env` and update database settings:
 
-## Security Vulnerabilities
+```sh
+    cp .env.example .env
+    php artisan key:generate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 4. Run Migrations & Seed Database
 
-## License
+```sh
+    php artisan migrate --seed
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 5. Start Server
+
+```sh
+    php artisan serve
+```
+
+---
+
+## Database Schema
+
+### **Tables:**
+
+- **users**: Stores teacher/admin credentials
+- **students**: Stores student emails for exam login
+- **exams**: Contains exam details (name, subject, date, etc.)
+- **questions**: Stores multiple-choice questions and correct answers
+- **exam_results**: Stores student scores after taking exams
+- **settings**: Stores configurable exam settings (passing score, time limit, etc.)
+
+---
+
+## Routes
+
+### **Authentication & Exam Access**
+
+| Method | URI | Description |
+|--------|-----|-------------|
+| GET | `/exam/login` | Show student login page |
+| POST | `/exam/authenticate` | Validate student and exam ID |
+| GET | `/exam/{exam}/start` | Start the exam |
+| POST | `/exam/{exam}/submit` | Submit answers & auto-grade |
+| GET | `/exam/{exam}/result` | View exam results |
+
+### **Teacher & Admin Routes**
+
+| Method | URI | Description |
+|--------|-----|-------------|
+| GET | `/exams` | List all exams |
+| GET | `/exams/create` | Create a new exam |
+| POST | `/exams/store` | Store exam in database |
+| GET | `/exams/{exam}/questions` | Manage questions for an exam |
+| POST | `/exams/{exam}/questions/store` | Add questions to an exam |
+| PUT | `/questions/{question}` | Update a question |
+| DELETE | `/questions/{question}` | Delete a question |
+| GET | `/settings` | View exam settings |
+| PUT | `/settings/update` | Save exam settings |
+
+---
+
+## Exam Workflow
+
+1. **Admin creates an exam** and sets the passing score/time limit.
+2. **Teacher adds questions** (at least 2 required, max 4 choices).
+3. **Students log in** using email & exam ID.
+4. **Students take the exam** by selecting answers.
+5. **Upon submission**, the system:
+   - Grades automatically ✅
+   - Stores results ✅
+   - Displays Pass/Fail based on settings ✅
+6. **Admin & Students can view results.**
+
+---
+
+## Logging & Error Handling
+
+- **All key actions are logged** (`storage/logs/laravel.log`)
+- **Unauthorized access attempts are logged**
+- **Exam authentication failures trigger warnings**
+- **Validation errors return detailed feedback**
+
+---
+
+## Future Enhancements
+
+- **Timer-based exams** ⏳
+- **Detailed answer review for students** 📖
+- **Question randomization** 🔀
+- **CSV Import/Export for exam data** 📂
+
+---
