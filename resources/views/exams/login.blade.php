@@ -8,6 +8,11 @@
             <div class="col-sm-12 col-md-6">
                 <div class="bg-light rounded h-100 p-4">
                     <h6 class="mb-4">Student Exam Login</h6>
+                
+                    @if(session('error'))
+                        <div class="alert alert-danger">{{ session('error') }}</div>
+                    @endif
+                
                     <form action="{{ route('exams.authenticate') }}" method="POST">
                         @csrf
                         <div class="mb-3">
@@ -21,6 +26,7 @@
                         <button type="submit" class="btn btn-primary">Start Exam</button>
                     </form>
                 </div>
+                
             </div>
         </div>
     </div>

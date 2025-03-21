@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\ExamResults;
 use App\Models\Exams;
+use App\Models\ExamSetting;
 use App\Models\Student;
+use App\Services\RemedialService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -12,6 +14,13 @@ use Illuminate\Support\Facades\Session;
 
 class ExamsController extends Controller
 {
+    protected $remedialService;
+
+    public function __construct(RemedialService $remedialService)
+    {
+        $this->remedialService = $remedialService;
+    }
+
     public function index()
     {
         $exams = Exams::all();
@@ -119,6 +128,11 @@ class ExamsController extends Controller
                 return back()->with('error', 'Unauthorized access.');
             }
 
+            // Store student info in session
+            Session::put('student_email', $request->email);
+            Session::put('student_id', $student->id);
+            Session::put('exam_id', $exam->id);
+
             // Check if the student has already taken the exam
             $existingResult = ExamResults::where('student_id', $student->id)
                 ->where('exams_id', $exam->id)
@@ -127,11 +141,6 @@ class ExamsController extends Controller
             if ($existingResult) {
                 return redirect()->route('exams.result', $exam->id)->with('error', 'You have already taken this exam.');
             }
-
-            // Store student info in session
-            Session::put('student_email', $request->email);
-            Session::put('student_id', $student->id);
-            Session::put('exam_id', $exam->id);
 
             Log::info('Student ' . $student->email . ' accessed Exam ID: ' . $exam->id);
 
@@ -162,32 +171,33 @@ class ExamsController extends Controller
             }
 
             $studentEmail = Session::get('student_email');
-            $answers = $request->input('answers', []);
+
+            // Calculate total score
             $totalScore = 0;
-            $correctAnswers = 0;
-            $wrongAnswers = 0;
-
-            foreach ($exam->questions as $question) {
-                $studentAnswer = $answers[$question->id] ?? null;
-                $isCorrect = $studentAnswer === $question->answer;
-
-                if ($isCorrect) {
+            foreach ($request->answers as $questionId => $answer) {
+                $question = $exam->questions()->find($questionId);
+                if ($question && $question->answer === $answer) {
                     $totalScore += $question->score;
-                    $correctAnswers++;
-                } else {
-                    $wrongAnswers++;
                 }
             }
 
-            ExamResults::create([
-                'student_email' => $studentEmail,
-                'exams_id' => $exam->id,
-                'total_score' => $totalScore,
-                // 'correct_answers' => $correctAnswers,
-                // 'wrong_answers' => $wrongAnswers,
-                // 'is_remedial' => $is_remedial,
-                // 'status' => $is_remedial ? 'failed' : 'passed',
-            ]);
+            $student = Student::where('email', $studentEmail)->first();
+
+            // Get passing score from settings
+            $passingScore = $exam->min_grade;
+
+            // Create or update exam result
+            $examResult = ExamResults::updateOrCreate(
+                ['student_id' => $student->id, 'exams_id' => $exam->id],
+                ['total_score' => $totalScore, 'passing_score' => $passingScore]
+            );
+
+            // Get grading scale from settings
+            $gradingScale = json_decode(ExamSetting::find(1)->get('grading_system'), true);
+
+            // Assign grade based on school-defined criteria
+            $examResult->assignGrade($gradingScale);
+            $this->remedialService->checkAndUpdateRemedialStatus($student);
 
             Log::info('Exam submitted successfully by ' . $studentEmail . ' for Exam ID: ' . $exam->id);
             return redirect()->route('exams.result', $exam->id)->with('success', 'Exam submitted successfully!');
@@ -205,15 +215,19 @@ class ExamsController extends Controller
         }
 
         $email = Session::get('student_email');
-        $studentId = Student::where('email', $email)->first()->id;
-        $result = ExamResults::where('student_id', $studentId)
-            ->where('exams_id', $exam->id)
-            ->first();
-        if (!$result) {
-            return redirect()->route('exams.login')->with('error', 'No result found.');
+        $student = Student::where('email', $email)->first();
+        $examResult = ExamResults::where('exams_id', $exam->id)
+            ->where('student_id', $student->id)
+            ->firstOrFail();
+
+        $questions = $exam->questions()->with(['studentAnswers' => function ($query) use ($student) {
+            $query->where('student_id', $student->id);
+        }])->get();
+        if ($examResult->isPassed()) {
+            return view('exams.result', compact('student', 'exam', 'examResult', 'questions'));
         }
 
-        return view('exams.result', compact('exam', 'result'));
+
+        return view('exams.result', compact('exam', 'result', 'student'));
     }
 }
-

@@ -10,7 +10,8 @@ class ExamResults extends Model
         'student_id',
         'exams_id',
         'total_score',
-        'is_remidial',
+        'grade',
+        'passing_score',
         'status',
     ];
 
@@ -22,5 +23,28 @@ class ExamResults extends Model
     public function exam()
     {
         return $this->belongsTo(Exams::class);
+    }
+
+    /**
+     * Determine if the student passed or failed
+     */
+    public function isPassed()
+    {
+        return $this->total_score >= $this->passing_score;
+    }
+
+    /**
+     * Assign grade based on school-defined criteria
+     */
+    public function assignGrade($gradingScale)
+    {
+        foreach ($gradingScale as $grade => $minScore) {
+            if ($this->total_score >= $minScore) {
+                $this->update(['grade' => $grade, 'status' => 'passed']);
+                return;
+            }
+        }
+
+        $this->update(['grade' => 'F', 'status' => 'failed']);
     }
 }

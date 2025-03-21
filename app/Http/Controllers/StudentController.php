@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ExamResults;
 use Exception;
 use Illuminate\Http\Request;
 use App\Models\Student;
+use App\Notifications\RemedialNotification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class StudentController extends Controller
 {
@@ -81,5 +84,25 @@ class StudentController extends Controller
             Log::error('Failed to delete student: ' . $e->getMessage());
             return back()->with('error', 'An error occurred while deleting the student.');
         }
+    }
+    public function checkRemedialFlag()
+    {
+        $students = Student::all();
+        foreach ($students as $student) {
+            $failedSubjects = ExamResults::where('student_email', $student->email)
+                ->where('total_score', '<', config('settings.passing_score', 50))
+                ->count();
+            
+            if ($failedSubjects > 2) {
+                $student->update(['requires_remedial' => true]);
+                
+                // Send notification
+                Notification::send($student, new RemedialNotification());
+                Log::info('Student flagged for remedial: ' . $student->email);
+            } else {
+                $student->update(['requires_remedial' => false]);
+            }
+        }
+        return redirect()->route('students.index')->with('success', 'Remedial checks updated successfully!');
     }
 }

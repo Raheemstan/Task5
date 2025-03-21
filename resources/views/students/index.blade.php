@@ -18,6 +18,7 @@
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Class</th>
+                                <th>Remidial  Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -28,6 +29,13 @@
                                     <td>{{ $student->name }}</td>
                                     <td>{{ $student->email }}</td>
                                     <td>{{ $student->class }}</td>
+                                    <td>
+                                        @if($student->requires_remedial)
+                                            <span class="badge bg-danger">Requires Remedial</span>
+                                        @else
+                                            <span class="badge bg-success">Passed</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
                                             data-bs-target="#editStudentModal{{ $student->id }}">Edit</button>
