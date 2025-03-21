@@ -98,6 +98,7 @@ php artisan serve
 
 | Method | Route                | Description                        |
 |--------|----------------------|------------------------------------|
+| GET    | `/exam/login` | Login to exam usig studet emai and exam id                     |
 | GET    | `/exam/{exam}/start` | Start an exam                     |
 | POST   | `/exam/{exam}/submit` | Submit answers and process grading |
 | GET    | `/exam/{exam}/result` | Show student result page           |
